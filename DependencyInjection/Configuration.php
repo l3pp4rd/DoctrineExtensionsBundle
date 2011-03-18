@@ -15,14 +15,16 @@ class Configuration
     public function getConfigTree()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('stof_doctrine_extensions', 'array');
+        $rootNode = $treeBuilder->root('stof_doctrine_extensions');
+        
+        $builder = $rootNode->children();
+        $this->addVendorConfig($builder, 'orm');
+        $this->addVendorConfig($builder, 'mongodb');
 
-        $this->addVendorConfig($rootNode, 'orm');
-        $this->addVendorConfig($rootNode, 'mongodb');
-
-        $classNode = $rootNode->arrayNode('class');
-        $this->addVendorClassConfig($classNode, 'orm');
-        $this->addVendorClassConfig($classNode, 'mongodb');
+        $classNode = $builder->arrayNode('class');
+        $builder = $classNode->children();
+        $this->addVendorClassConfig($builder, 'orm');
+        $this->addVendorClassConfig($builder, 'mongodb');
 
         return $treeBuilder->buildTree();
     }
@@ -33,7 +35,8 @@ class Configuration
             ->arrayNode($name)
                 ->useAttributeAsKey('id')
                 ->prototype('array')
-                    ->performNoDeepMerging()
+                ->performNoDeepMerging()
+                ->children()
                     ->scalarNode('translatable')->defaultTrue()->end()
                     ->scalarNode('timestampable')->defaultTrue()->end()
                     ->scalarNode('sluggable')->defaultTrue()->end()
@@ -47,11 +50,13 @@ class Configuration
     {
         $node
             ->arrayNode($name)
-                ->scalarNode('translatable')->end()
-                ->scalarNode('timestampable')->end()
-                ->scalarNode('sluggable')->end()
-                ->scalarNode('tree')->end()
-                ->scalarNode('loggable')->end()
+                ->children()
+                    ->scalarNode('translatable')->end()
+                    ->scalarNode('timestampable')->end()
+                    ->scalarNode('sluggable')->end()
+                    ->scalarNode('tree')->end()
+                    ->scalarNode('loggable')->end()
+                ->end()
             ->end();
     }
 }
